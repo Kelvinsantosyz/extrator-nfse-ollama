@@ -1,9 +1,10 @@
-streamlit
-pandas
 ollama
-pytesseract
-Pillow
-PyMuPDF
+pandas
 openpyxl
+streamlit
 plotly
+pytesseract
+PyMuPDF
 xlsxwriter
+mysql-connector-python
+python-dotenv

@@ -1,35 +1,16 @@
-# processador.py
-
 import os
 import json
 import hashlib
 from datetime import datetime
-import pandas as pd
 from typing import Dict, Any
 
 # --- Bibliotecas de Extração ---
 import ollama
 import pytesseract
 from PIL import Image
-import fitz  # PyMuPDF
+import fitz # PyMuPDF
 
-# ==============================================================================
-# CONFIGURAÇÕES E CONSTANTES
-# ==============================================================================
-PASTA_PLANILHA = r'H:\projeto2\Planilha'
-NOME_ARQUIVO_PLANILHA = 'planilha de dados.xlsx'
-CAMINHO_PLANILHA = os.path.join(PASTA_PLANILHA, NOME_ARQUIVO_PLANILHA)
-
-HEADERS = [
-    'hash', 'arquivo', 'data_processamento', 'numero_nota', 'data_hora_emissao', 'codigo_verificacao',
-    'prestador_cnpj', 'prestador_razao_social', 'prestador_inscricao_municipal',
-    'prestador_logradouro', 'prestador_bairro', 'prestador_cep', 'prestador_cidade', 'prestador_uf',
-    'tomador_cpf', 'tomador_razao_social', 'tomador_email',
-    'tomador_logradouro', 'tomador_bairro', 'tomador_cep', 'tomador_cidade', 'tomador_uf',
-    'discriminacao_servicos', 'servico_codigo', 'servico_descricao',
-    'valor_total_servico', 'base_calculo', 'aliquota', 'valor_iss',
-    'valor_total_impostos'
-]
+# As constantes de planilha foram movidas para o database.py e app.py
 
 # ==============================================================================
 # FUNÇÃO OCR (Fallback)
@@ -50,7 +31,7 @@ def extrair_texto_ocr(filepath: str) -> str:
 # ==============================================================================
 def processar_documento_com_llm_local(filepath: str) -> Dict[str, Any]:
     MODELO_FIXO = 'llava:13b'
-    print(f"      [LLaVA] Enviando '{os.path.basename(filepath)}' para o modelo '{MODELO_FIXO}'...")
+    print(f"     [LLaVA] Enviando '{os.path.basename(filepath)}' para o modelo '{MODELO_FIXO}'...")
     prompt = """
     Você é um sistema de extração de dados altamente preciso. Analise a Nota Fiscal de Serviços (NFS-e) fornecida.
     Sua única tarefa é retornar um objeto JSON válido, no formato abaixo, preenchido com os dados da nota.
@@ -79,10 +60,11 @@ def processar_documento_com_llm_local(filepath: str) -> Dict[str, Any]:
         if inicio_json != -1 and fim_json != 0:
             json_text = json_text[inicio_json:fim_json]
             return json.loads(json_text)
-        return {"texto_extraido": extrair_texto_ocr(filepath)}
+        print(f"     [LLaVA] ERRO: Nenhum JSON encontrado na resposta.")
+        return {}
     except Exception as e:
-        print(f"      [LLaVA] Erro ao usar modelo multimodal: {e}")
-        return {"texto_extraido": extrair_texto_ocr(filepath)}
+        print(f"     [LLaVA] Erro ao usar modelo multimodal: {e}")
+        return {}
 
 # ==============================================================================
 # FUNÇÕES AUXILIARES
@@ -112,7 +94,7 @@ def clean_and_format_data(dados_brutos: Dict[str, Any]) -> Dict[str, Any]:
             dados_limpos['aliquota'] = float(valor_numerico) / 100.0
         except (ValueError, TypeError):
             dados_limpos['aliquota'] = 0.0
-    data_str = dados_limpos.get('data_hora_emissao', '') or ''
+    data_str = dados_brutos.get('data_hora_emissao', '') or ''
     if isinstance(data_str, str) and data_str:
         try:
             if len(data_str) > 10:
@@ -123,3 +105,4 @@ def clean_and_format_data(dados_brutos: Dict[str, Any]) -> Dict[str, Any]:
         except ValueError:
             dados_limpos['data_hora_emissao'] = data_str
     return dados_limpos
+

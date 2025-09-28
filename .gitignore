@@ -1,0 +1,9 @@
+Ignorar o ambiente virtual
+venv/
+
+Ignorar arquivos de cache do Python
+pycache/
+*.pyc
+
+Ignorar o arquivo de variáveis de ambiente com senhas!
+.env
