@@ -3,7 +3,7 @@ import pandas as pd
 import os
 from dotenv import load_dotenv
 
-# Carrega as variáveis do arquivo .env para o ambiente
+# Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
 
 # ==============================================================================
@@ -23,7 +23,7 @@ DB_CONFIG = {
 def create_connection():
     """Cria e retorna uma conexão com o banco de dados MySQL."""
     if not all([DB_CONFIG['user'], DB_CONFIG['password'], DB_CONFIG['database']]):
-        print("Erro: As credenciais do banco de dados não foram definidas no arquivo .env")
+        print("Erro: Credenciais do banco de dados não foram definidas no arquivo .env")
         return None
     try:
         conn = mysql.connector.connect(
@@ -40,9 +40,10 @@ def create_connection():
         return None
 
 def create_table_if_not_exists(conn):
-    """Cria a tabela 'notas_fiscais' se ela ainda não existir."""
+    """Cria a tabela 'notas_fiscais' e adiciona novas colunas se necessário."""
     try:
         cursor = conn.cursor()
+        # Query principal para criar a tabela com todos os campos, incluindo o novo 'valor_inss'
         create_table_query = """
         CREATE TABLE IF NOT EXISTS notas_fiscais (
             hash VARCHAR(32) PRIMARY KEY,
@@ -74,21 +75,32 @@ def create_table_if_not_exists(conn):
             base_calculo DECIMAL(10, 2),
             aliquota DECIMAL(5, 4),
             valor_iss DECIMAL(10, 2),
-            valor_total_impostos DECIMAL(10, 2)
+            valor_total_impostos DECIMAL(10, 2),
+            valor_inss DECIMAL(10, 2),
+            categoria VARCHAR(100)
         );
         """
         cursor.execute(create_table_query)
+        
+        # Bloco de verificação para garantir que as colunas existem em tabelas antigas
+        cursor.execute("SHOW COLUMNS FROM notas_fiscais LIKE 'categoria'")
+        if not cursor.fetchone():
+            cursor.execute("ALTER TABLE notas_fiscais ADD COLUMN categoria VARCHAR(100)")
+            
+        cursor.execute("SHOW COLUMNS FROM notas_fiscais LIKE 'valor_inss'")
+        if not cursor.fetchone():
+            cursor.execute("ALTER TABLE notas_fiscais ADD COLUMN valor_inss DECIMAL(10, 2)")
+            
         conn.commit()
     except mysql.connector.Error as e:
-        print(f"Erro ao criar a tabela: {e}")
+        print(f"Erro ao criar/alterar a tabela: {e}")
 
 def get_all_hashes(conn):
     """Busca todos os hashes de arquivos já processados no banco de dados."""
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT hash FROM notas_fiscais")
-        hashes = {row[0] for row in cursor.fetchall()}
-        return hashes
+        return {row[0] for row in cursor.fetchall()}
     except mysql.connector.Error as e:
         print(f"Erro ao buscar hashes: {e}")
         return set()
@@ -97,16 +109,17 @@ def insert_record(conn, data_dict, headers):
     """Insere ou atualiza um registro na tabela 'notas_fiscais'."""
     try:
         cursor = conn.cursor()
-        cols = ', '.join([f"`{h}`" for h in headers if h in data_dict and data_dict[h] is not None])
-        placeholders = ', '.join(['%s'] * len([h for h in headers if h in data_dict and data_dict[h] is not None]))
-        updates = ', '.join([f"`{h}`=%s" for h in headers if h in data_dict and h != 'hash' and data_dict[h] is not None])
+        cols_to_insert = [h for h in headers if h in data_dict and data_dict.get(h) is not None]
         
-        sql = f"INSERT INTO notas_fiscais ({cols}) VALUES ({placeholders}) ON DUPLICATE KEY UPDATE {updates}"
+        cols_str = ', '.join([f"`{h}`" for h in cols_to_insert])
+        placeholders = ', '.join(['%s'] * len(cols_to_insert))
+        updates = ', '.join([f"`{h}`=VALUES(`{h}`)" for h in cols_to_insert if h != 'hash'])
         
-        values = [data_dict.get(h) for h in headers if h in data_dict and data_dict[h] is not None]
-        update_values = [data_dict.get(h) for h in headers if h in data_dict and h != 'hash' and data_dict[h] is not None]
+        sql = f"INSERT INTO notas_fiscais ({cols_str}) VALUES ({placeholders}) ON DUPLICATE KEY UPDATE {updates}"
         
-        cursor.execute(sql, tuple(values + update_values))
+        values = tuple([data_dict.get(h) for h in cols_to_insert])
+        
+        cursor.execute(sql, values)
         conn.commit()
     except mysql.connector.Error as e:
         print(f"Erro ao inserir registro: {e}")
@@ -114,10 +127,37 @@ def insert_record(conn, data_dict, headers):
 def fetch_all_data_as_dataframe(conn):
     """Busca todos os dados da tabela e retorna como um DataFrame do Pandas."""
     try:
-        query = "SELECT * FROM notas_fiscais"
-        df = pd.read_sql(query, conn)
+        return pd.read_sql("SELECT * FROM notas_fiscais ORDER BY data_hora_emissao DESC", conn)
+    except Exception as e:
+        print(f"Erro ao buscar dados: {e}")
+        return pd.DataFrame()
+
+def search_data_as_dataframe(conn, search_term, search_field):
+    """
+    Busca dados na tabela filtrando por um termo em um campo específico.
+    É mais eficiente do que filtrar no app.
+    """
+    if not search_term or not search_field:
+        return fetch_all_data_as_dataframe(conn)
+        
+    # Mapeia os campos da interface para as colunas do banco
+    valid_fields = {
+        "CNPJ do Prestador": "prestador_cnpj",
+        "Razão Social": "prestador_razao_social",
+        "Número da Nota": "numero_nota"
+    }
+    
+    column_to_search = valid_fields.get(search_field)
+    
+    if not column_to_search:
+        return pd.DataFrame() # Retorna vazio se o campo for inválido
+
+    try:
+        query = f"SELECT * FROM notas_fiscais WHERE {column_to_search} LIKE %s ORDER BY data_hora_emissao DESC"
+        like_term = f"%{search_term}%"
+        df = pd.read_sql(query, conn, params=(like_term,))
         return df
     except Exception as e:
-        print(f"Erro ao buscar dados como DataFrame: {e}")
+        print(f"Erro ao buscar dados filtrados: {e}")
         return pd.DataFrame()
 

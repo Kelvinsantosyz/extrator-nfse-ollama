@@ -6,25 +6,6 @@ from typing import Dict, Any
 
 # --- Bibliotecas de Extração ---
 import ollama
-import pytesseract
-from PIL import Image
-import fitz # PyMuPDF
-
-# As constantes de planilha foram movidas para o database.py e app.py
-
-# ==============================================================================
-# FUNÇÃO OCR (Fallback)
-# ==============================================================================
-def extrair_texto_ocr(filepath: str) -> str:
-    if filepath.lower().endswith(".pdf"):
-        texto_pdf = ""
-        with fitz.open(filepath) as pdf:
-            for pagina in pdf:
-                texto_pdf += pagina.get_text()
-        return texto_pdf
-    else:
-        img = Image.open(filepath)
-        return pytesseract.image_to_string(img, lang="por")
 
 # ==============================================================================
 # FUNÇÃO PRINCIPAL DE PROCESSAMENTO (LLM)
@@ -32,19 +13,23 @@ def extrair_texto_ocr(filepath: str) -> str:
 def processar_documento_com_llm_local(filepath: str) -> Dict[str, Any]:
     MODELO_FIXO = 'llava:13b'
     print(f"     [LLaVA] Enviando '{os.path.basename(filepath)}' para o modelo '{MODELO_FIXO}'...")
+    
+    # Prompt atualizado para incluir o campo 'valor_inss'
     prompt = """
-    Você é um sistema de extração de dados altamente preciso. Analise a Nota Fiscal de Serviços (NFS-e) fornecida.
-    Sua única tarefa é retornar um objeto JSON válido, no formato abaixo, preenchido com os dados da nota.
-    Não inclua explicações ou texto fora do JSON.
+    Você é um assistente de IA especialista em extrair dados de Notas Fiscais de Serviço (NFS-e) brasileiras. Analise a imagem em anexo com extrema atenção.
+    Sua única tarefa é retornar um objeto JSON completo e válido. Não inclua NENHUMA palavra ou explicação fora do objeto JSON.
+    Com base no campo 'discriminacao', sugira uma categoria de despesa (ex: 'Serviços de TI', 'Marketing', 'Manutenção', 'Consultoria', 'Saúde').
+    Extraia o valor do campo 'INSS (R$)' para o campo 'valor_inss'.
 
-    Estrutura JSON:
+    Siga rigorosamente esta estrutura JSON:
     {
       "numero_nota": "...", "data_hora_emissao": "...", "codigo_verificacao": "...",
       "prestador": { "cnpj": "...", "razao_social": "...", "inscricao_municipal": "...", "endereco": { "logradouro": "...", "bairro": "...", "cep": "...", "cidade": "...", "uf": "..." } },
       "tomador": { "cpf": "...", "razao_social": "...", "email": "...", "endereco": { "logradouro": "...", "bairro": "...", "cep": "...", "cidade": "...", "uf": "..." } },
       "servico": { "discriminacao": "...", "codigo": "...", "descricao": "..." },
-      "valores": { "total_servico": "...", "base_calculo": "...", "aliquota": "...", "valor_iss": "..." },
-      "valor_total_impostos": "..."
+      "valores": { "total_servico": "...", "base_calculo": "...", "aliquota": "...", "valor_iss": "...", "valor_inss": "..." },
+      "valor_total_impostos": "...",
+      "categoria": "Sugestão de Categoria"
     }
     """
     try:
@@ -72,28 +57,32 @@ def processar_documento_com_llm_local(filepath: str) -> Dict[str, Any]:
 def generate_file_hash(filepath: str) -> str:
     hash_md5 = hashlib.md5()
     with open(filepath, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
+        for chunk in iter(lambda: f.read(4_096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
 def clean_and_format_data(dados_brutos: Dict[str, Any]) -> Dict[str, Any]:
     dados_limpos = dados_brutos.copy()
-    campos_monetarios = ['valor_total_servico', 'base_calculo', 'valor_iss', 'valor_total_impostos']
+    # Adicionado 'valor_inss' à lista
+    campos_monetarios = ['valor_total_servico', 'base_calculo', 'valor_iss', 'valor_total_impostos', 'valor_inss']
     for campo in campos_monetarios:
-        valor_str = dados_brutos.get(campo, '0') or '0'
+        # A lógica agora busca tanto no dicionário principal quanto no aninhado 'valores'
+        valor_str = dados_brutos.get(campo) or dados_brutos.get("valores", {}).get(campo, '0') or '0'
         if isinstance(valor_str, str):
             valor_numerico = valor_str.replace('R$', '').strip().replace('.', '').replace(',', '.')
             try:
                 dados_limpos[campo] = float(valor_numerico)
             except (ValueError, TypeError):
                 dados_limpos[campo] = 0.0
-    aliquota_str = dados_brutos.get('aliquota', '0') or '0'
+    
+    aliquota_str = dados_brutos.get("valores", {}).get('aliquota', '0') or '0'
     if isinstance(aliquota_str, str):
         valor_numerico = aliquota_str.replace('%', '').strip().replace(',', '.')
         try:
             dados_limpos['aliquota'] = float(valor_numerico) / 100.0
         except (ValueError, TypeError):
             dados_limpos['aliquota'] = 0.0
+            
     data_str = dados_brutos.get('data_hora_emissao', '') or ''
     if isinstance(data_str, str) and data_str:
         try:
@@ -103,6 +92,9 @@ def clean_and_format_data(dados_brutos: Dict[str, Any]) -> Dict[str, Any]:
                  dt_obj = datetime.strptime(data_str, '%d/%m/%Y')
             dados_limpos['data_hora_emissao'] = dt_obj.strftime('%Y-%m-%d %H:%M:%S')
         except ValueError:
-            dados_limpos['data_hora_emissao'] = data_str
+            dados_limpos['data_hora_emissao'] = None
+            
+    dados_limpos['categoria'] = str(dados_brutos.get('categoria', 'Não Categorizado'))
+    
     return dados_limpos
 
