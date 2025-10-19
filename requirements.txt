@@ -8,3 +8,4 @@ PyMuPDF
 xlsxwriter
 mysql-connector-python
 python-dotenv
+streamlit_authenticato

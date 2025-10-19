@@ -1,107 +1,334 @@
-# Extrator Inteligente de Notas Fiscais com IA Local e Streamlit
+<<<<<<< HEAD
+🤖 Extrator e Gestor Inteligente de Notas Fiscais com IA Local
+=======
+# 🤖 Extrator Inteligente de Notas Fiscais com IA Local e Streamlit
+>>>>>>> e79d654dd563fd1f74cfaa485b754e2adb361f76
 
-*Este projeto foi desenvolvido para a disciplina de **PROJETO EM COMPUTAÇÃO APLICADA** da **UNINOVE (Universidade Nove de Julho)**, sob orientação do **Prof. Luis Carlos dos Santos Junior.***
+Este projeto foi desenvolvido para a disciplina de PROJETO EM COMPUTAÇÃO APLICADA da UNINOVE (Universidade Nove de Julho), sob orientação do Prof. Luis Carlos dos Santos Junior.
+
+Visão Geral
+
+O Extrator Inteligente de Notas Fiscais é uma aplicação web completa, desenvolvida em Python com Streamlit, que automatiza o processo de extração de dados de documentos fiscais (NFS-e). A solução utiliza um modelo de linguagem e visão (multimodal) rodando 100% localmente com Ollama para analisar imagens e PDFs, extrair informações estruturadas e persisti-las numa base de dados MySQL para análise e gestão financeira.
+
+<<<<<<< HEAD
+A aplicação conta com um sistema de autenticação robusto, gestão de utilizadores com diferentes níveis de permissão e um dashboard financeiro interativo para a visualização de métricas e tendências.
+
+Arquitetura do Projeto
+=======
+Este projeto é uma aplicação web completa, construída com **Streamlit**, que utiliza um **modelo de linguagem e visão (multimodal)** rodando **localmente com Ollama** para extrair, validar e analisar informações de **Notas Fiscais de Serviço Eletrônicas (NFS-e)**.
+
+A ferramenta transforma o processo manual de entrada de dados em um fluxo de trabalho **inteligente, automatizado e interativo**.
+
+💡 A aplicação é **100% local**, garantindo que **nenhum dado sensível** seja enviado para APIs externas, oferecendo **total privacidade e segurança**.
+
+---
+>>>>>>> e79d654dd563fd1f74cfaa485b754e2adb361f76
+
+O projeto é modularizado numa estrutura Frontend e Backend para uma melhor organização e manutenibilidade:
+
+<<<<<<< HEAD
+Frontend/: Construído com Streamlit, contém toda a lógica da interface do utilizador, dashboards e interação.
+
+Backend/: O "motor" da aplicação, responsável por:
+
+Processamento de IA: Comunica com o Ollama para usar o modelo LLaVA na extração de dados.
+
+Gestão da Base de Dados: Interage com a base de dados MySQL para armazenar e consultar notas fiscais e utilizadores.
+=======
+A aplicação vai muito além de um simples script, oferecendo um ambiente completo para **gerenciamento e análise de NFS-e**:
+
+* **Interface Web Interativa**
+  Interface amigável construída com Streamlit, organizada em abas para diferentes tarefas.
+
+* **Motor de Extração Híbrido**
+
+  * Utiliza o modelo multimodal **LLaVA** para “ler” e extrair dados estruturados de imagens e PDFs.
+  * Sistema de **fallback com OCR (Tesseract)** garante a extração de texto mesmo quando a IA não reconhece corretamente.
+
+* **Múltiplos Métodos de Entrada**
+
+  * 📂 **Upload Manual**: Envie múltiplos arquivos (`.png`, `.jpg`, `.pdf`) de uma só vez.
+  * 🗂️ **Processamento em Lote**: Analisa automaticamente todos os documentos dentro de uma pasta no servidor.
+
+* **Validação Humana no Fluxo (Human-in-the-loop)**
+
+  * Exibe os dados extraídos em uma **tabela editável** (`st.data_editor`) antes do salvamento, permitindo correções manuais.
+
+* **Dashboard para Análise de Dados**
+
+  * Aba dedicada com **gráficos e métricas interativas**.
+  * **Gráfico de Pizza Interativo** (Plotly) mostrando distribuição por estado (UF).
+  * **Filtros Dinâmicos** por mês e ano para análise temporal.
+
+* **Consulta e Pesquisa**
+
+  * Pesquise em toda a base de dados com **filtros por qualquer termo**.
+  * Exibe **métricas e KPIs** como total de notas e valores acumulados.
+
+* **Gerenciamento de Dados Robusto**
+
+  * 🚫 **Prevenção de Duplicatas**: Identifica arquivos duplicados por **hash MD5**.
+  * ✅ **Integridade de Dados**: Garante que não haja entradas repetidas na planilha final.
+  * 💾 **Exportação Flexível**: Baixe os dados validados em **Excel (.xlsx)** ou **CSV**.
 
 ---
 
-## 📜 Introdução
-
-Este projeto é uma aplicação web completa, construída com Streamlit, que utiliza um modelo de linguagem e visão (multimodal) rodando localmente com Ollama para extrair, validar e analisar informações de Notas Fiscais de Serviço Eletrônicas (NFS-e). A ferramenta transforma o processo manual de entrada de dados em um fluxo de trabalho inteligente e interativo.
-
-A aplicação é 100% local, garantindo que nenhum dado sensível seja enviado para APIs externas, oferecendo total privacidade e segurança.
-
-## ✨ Funcionalidades Principais
-
-A aplicação vai muito além de um simples script, oferecendo um ambiente completo para gerenciamento de NFS-e:
-
--   **Interface Web Interativa**: Uma interface amigável e intuitiva construída com Streamlit, organizada em abas para diferentes tarefas.
--   **Motor de Extração Híbrido**:
-    -   Usa o modelo multimodal **LLaVA** para "ler" e extrair dados estruturados diretamente de imagens e PDFs.
-    -   Possui um sistema de **fallback para OCR** (Tesseract) para garantir a extração de texto mesmo que a análise da IA falhe.
--   **Múltiplos Métodos de Entrada**:
-    -   **Upload Manual**: Permite ao usuário subir múltiplos arquivos (`.png`, `.jpg`, `.pdf`) de uma vez.
-    -   **Processamento em Lote**: Processa automaticamente todos os documentos dentro de uma pasta especificada no servidor.
--   **Validação Humana no Fluxo (Human-in-the-loop)**:
-    -   Apresenta os dados extraídos em uma **tabela editável** (`st.data_editor`), permitindo que o usuário corrija qualquer imprecisão da IA antes de salvar.
--   **Dashboard para Análise de Dados**:
-    -   Uma aba de "Dashboard" que gera visualizações a partir dos dados salvos.
-    -   **Gráfico de Pizza Interativo** (com Plotly) para analisar a distribuição de valores por estado (UF).
-    -   **Filtro Dinâmico por Mês/Ano** para analisar a performance em diferentes períodos.
--   **Consulta e Pesquisa**:
-    -   Uma aba para visualizar e **pesquisar em toda a base de dados** salva, com filtros por qualquer termo.
-    -   Exibe métricas e KPIs (Indicadores) do total de notas e valores acumulados.
--   **Gerenciamento de Dados Robusto**:
-    -   **Prevenção de Duplicatas**: Utiliza hash MD5 para identificar e ignorar arquivos já processados.
-    -   **Integridade de Dados**: Garante que não haja entradas duplicadas na planilha final.
-    -   **Exportação Flexível**: Permite o download dos dados validados nos formatos **Excel (.xlsx)** e **CSV**.
-
 ## 🛠️ Tecnologias Utilizadas
+---
 
-| Biblioteca | Principal Uso |
-| :--- | :--- |
-| `streamlit` | Criação da interface web interativa e do dashboard. |
-| `pandas` | Manipulação, limpeza, filtragem e agregação dos dados. |
-| `ollama` | Execução local do modelo de linguagem multimodal (LLaVA). |
-| `pytesseract` | OCR (Reconhecimento Óptico de Caracteres) para o sistema de fallback. |
-| `PyMuPDF` | Extração de texto de arquivos PDF para o OCR. |
-| `Pillow` | Manipulação de imagens para o OCR. |
-| `plotly` | Geração de gráficos interativos (pizza). |
-| `openpyxl`, `xlsxwriter`| Leitura e escrita de arquivos Excel (.xlsx). |
+| Biblioteca                | Principal Uso                                                                 |
+| ------------------------- | ----------------------------------------------------------------------------- |
+| `streamlit`               | Criação da interface web e dashboards interativos                             |
+| `pandas`                  | Manipulação, filtragem e agregação de dados                                   |
+| `ollama`                  | Execução local do modelo de linguagem multimodal (LLaVA)                      |
+| `pytesseract`             | OCR para fallback em caso de falha do modelo                                  |
+| `PyMuPDF`                 | Extração de texto de arquivos PDF                                             |
+| `Pillow`                  | Manipulação de imagens para OCR                                               |
+| `plotly`                  | Geração de gráficos interativos                                               |
+| `openpyxl`, `xlsxwriter`  | Leitura e escrita de planilhas Excel (.xlsx)                                  |
+| `mysql-connector-python`  | Conexão e comunicação com o banco de dados MySQL                              |
+| `python-dotenv`           | Leitura de variáveis de ambiente a partir do arquivo `.env`                   |
+| `streamlit_authenticator` | Sistema de autenticação seguro com login, permissões e gestão de utilizadores |
 
-## 🚀 Como Executar o Projeto
+---
 
-Siga os passos abaixo para configurar e executar a aplicação.
+Quer que eu integre essa tabela no seu **README final** na seção de “🧩 Dependências”?
 
-### 1. Pré-requisitos
+>>>>>>> e79d654dd563fd1f74cfaa485b754e2adb361f76
 
--   **Python 3.8+**: [python.org](https://www.python.org/downloads/)
--   **Ollama**: Siga as instruções de instalação em [ollama.com](https://ollama.com/).
--   **Modelo LLaVA**: Após instalar o Ollama, abra um terminal e execute:
-    ```bash
-    # Você pode escolher um modelo menor e mais rápido, como 'llava:7b'
-    ollama pull llava:13b
-    ```
--   **Google Tesseract OCR**: Para o sistema de fallback funcionar, instale o Tesseract seguindo as [instruções para Windows](https://github.com/tesseract-ocr/tessdoc/blob/main/Installation.md) (lembre-se de adicionar o local da instalação à variável de ambiente PATH).
+Gestão de Autenticação: Lida com a lógica de login e permissões.
 
-### 2. Configuração do Projeto
+<<<<<<< HEAD
+Funcionalidades Principais
 
-1.  **Clone o repositório:**
-    ```bash
-    git clone [https://github.com/Kelvinsantosyz/extrator-nfse-ollama.git](https://github.com/Kelvinsantosyz/extrator-nfse-ollama.git)
-    cd extrator-nfse-ollama
-    ```
-2.  **Crie e ative um ambiente virtual**:
-    ```bash
-    # Criar
-    python -m venv venv
-    # Ativar no Windows (PowerShell)
-    .\venv\Scripts\Activate.ps1
-    ```
-3.  **Instale as bibliotecas Python**:
-    ```bash
-    # Use o comando mais robusto para garantir que o pip do venv seja usado
-    python -m pip install -r requirements.txt
-    ```
-4.  **Crie as pastas necessárias** na raiz do projeto, se não existirem:
-    - `/Documentos/` (para o processamento em lote)
-    - `/Planilha/` (onde o arquivo Excel será salvo)
+Extração de Dados com IA
 
-### 3. Execução
+Processamento Multimodal: Lê ficheiros de imagem (.png, .jpg) e PDFs diretamente.
 
-1.  **Inicie o aplicativo Streamlit** a partir do seu terminal (com o ambiente virtual ativado):
-    ```bash
-    python -m streamlit run app.py
-    ```
-2.  **Abra o navegador**: O Streamlit abrirá uma aba no seu navegador com a aplicação rodando. Agora você pode usar a interface para processar seus documentos.
+IA 100% Local: Utiliza o modelo LLaVA através do Ollama, garantindo total privacidade e zero custos de API.
 
-## 📸 Screenshots da Aplicação
+Sugestão de Categoria: A IA sugere uma categoria de despesa com base na descrição dos serviços.
 
-*(Sugestão: Adicione aqui alguns prints da sua aplicação em funcionamento!)*
+Base de Dados e Persistência
 
-- *Tela de Processamento de Documentos*
-- *Tela do Dashboard com o Gráfico*
-- *Tela de Consulta com a Pesquisa*
+Backend MySQL: Todos os dados são armazenados numa base de dados MySQL, garantindo escalabilidade e rapidez nas consultas.
 
-## 👨‍💻 Desenvolvedor
+Prevenção de Duplicatas: Utiliza um hash MD5 para cada ficheiro, impedindo que o mesmo documento seja processado múltiplas vezes.
 
--   **Kelvin Santos**
+Sistema de Autenticação e Gestão de Utilizadores
+
+Tela de Login Segura: O acesso à aplicação é protegido por um sistema de login.
+=======
+Siga os passos abaixo para configurar e executar a aplicação corretamente.
+
+### 1️⃣ Pré-requisitos
+
+* **Python 3.8+** → [python.org](https://www.python.org/downloads/)
+* **Ollama** → [ollama.com](https://ollama.com/)
+* **Google Tesseract OCR** → [Instruções de instalação](https://github.com/tesseract-ocr/tessdoc/blob/main/Installation.md)
+
+Após instalar o Ollama, baixe o modelo multimodal:
+
+```bash
+# Você pode escolher um modelo menor (ex: llava:7b) se preferir desempenho
+ollama pull llava:13b
+```
+
+> ⚠️ Lembre-se de adicionar o Tesseract à variável de ambiente **PATH** no Windows.
+
+---
+
+### 2️⃣ Configuração do Projeto
+
+1. **Clone o repositório:**
+
+   ```bash
+   git clone https://github.com/Kelvinsantosyz/extrator-nfse-ollama.git
+   cd extrator-nfse-ollama
+   ```
+
+2. **Crie e ative um ambiente virtual:**
+
+   ```bash
+   python -m venv venv
+   # Ativar no Windows (PowerShell)
+   .\venv\Scripts\Activate.ps1
+   # ou no Linux/Mac
+   source venv/bin/activate
+   ```
+
+3. **Instale as dependências:**
+
+   ```bash
+   python -m pip install -r requirements.txt
+   ```
+
+4. **Crie as pastas necessárias (se não existirem):**
+
+   ```bash
+   mkdir Documentos Planilha
+   ```
+
+   * `Documentos/` → pasta usada para o processamento em lote
+   * `Planilha/` → onde o Excel será salvo
+
+---
+
+### 3️⃣ Execução
+
+Inicie o aplicativo a partir do terminal (com o ambiente virtual ativo):
+
+```bash
+python -m streamlit run app.py
+```
+
+O Streamlit abrirá automaticamente uma aba no navegador com a aplicação em execução.
+
+---
+>>>>>>> e79d654dd563fd1f74cfaa485b754e2adb361f76
+
+Palavras-passe Criptografadas: As palavras-passe são armazenadas de forma segura na base de dados usando hash bcrypt.
+
+<<<<<<< HEAD
+Níveis de Permissão:
+
+Utilizador Padrão: Pode processar documentos e visualizar os dados.
+
+Administrador: Tem acesso a um painel exclusivo para gerir o sistema.
+
+Painel de Administrador:
+
+Visualização de todos os utilizadores registados.
+
+Criação de novos utilizadores (padrão ou administradores).
+
+Opção para forçar a alteração de palavra-passe de um utilizador.
+
+Eliminação de contas de utilizador.
+
+Exportação da lista de utilizadores para CSV.
+
+Gestão de Perfil:
+
+Os utilizadores são forçados a alterar a palavra-passe no primeiro login.
+
+Qualquer utilizador pode alterar a sua própria palavra-passe a qualquer momento através do seu perfil.
+
+Interface e Análise Financeira
+
+Upload Flexível: Permite o envio de múltiplos ficheiros ou o processamento de uma pasta inteira no servidor.
+
+Validação de Dados: Exibe os dados extraídos numa tabela editável antes de os salvar permanentemente, permitindo correções manuais.
+
+Consulta e Filtro Avançados: Uma aba dedicada para pesquisar na base de dados por CNPJ, Razão Social ou Número da Nota, com resumo financeiro dos resultados filtrados.
+
+Dashboard Financeiro Interativo:
+
+Métricas gerais (Valor Total, Total de ISS, Carga Tributária Média).
+
+Gráfico de evolução mensal de despesas e impostos.
+
+Gráfico com o Top 5 de fornecedores (prestadores).
+
+Gráfico de pizza com a distribuição de despesas por categoria.
+
+Tecnologias Utilizadas
+
+Linguagem: Python 3.8+
+
+Interface: Streamlit
+
+Processamento de IA: Ollama com o modelo LLaVA (13b)
+
+Base de Dados: MySQL
+
+Conexão com a BD: SQLAlchemy e mysql-connector-python
+
+Manipulação de Dados: Pandas
+
+Autenticação: Streamlit-Authenticator e Bcrypt
+
+Como Executar
+
+Siga os passos abaixo para configurar e executar o projeto.
+
+1. Pré-requisitos
+
+Python 3.8+: python.org
+
+Ollama: ollama.com
+
+Modelo LLaVA: Após instalar o Ollama, execute no terminal: ollama pull llava:13b
+
+Servidor MySQL: Tenha um servidor MySQL em execução (local ou remoto).
+
+2. Configuração do Projeto
+
+Clone o repositório:
+
+git clone [https://github.com/Kelvinsantosyz/extrator-nfse-ollama.git](https://github.com/Kelvinsantosyz/extrator-nfse-ollama.git)
+cd extrator-nfse-ollama
+
+
+Crie e ative um ambiente virtual:
+
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+
+Instale as dependências:
+
+pip install -r requirements.txt
+
+
+Configure as credenciais:
+
+Crie um ficheiro chamado .env na raiz do projeto.
+
+Preencha-o com as suas credenciais da base de dados:
+
+DB_HOST=localhost
+DB_USER=seu_usuario
+DB_PASSWORD=sua_senha
+DB_NAME=nfse_db
+
+
+Crie o primeiro utilizador administrador:
+
+Execute o script de configuração a partir da raiz do projeto:
+
+python create_admin.py
+
+
+Siga as instruções no terminal para criar a sua conta de administrador.
+
+3. Execução
+
+Certifique-se de que o Ollama e o seu servidor MySQL estão em execução.
+
+A partir da raiz do projeto, execute o comando:
+
+streamlit run Frontend/app.py
+
+
+A aplicação será aberta automaticamente no seu navegador. Faça login com o utilizador administrador que acabou de criar.
+=======
+**Kelvin Santos**
+📧 [kelvinsantosyz@gmail.com](mailto:kelvinsantosyz@gmail.com)
+💻 [GitHub](https://github.com/Kelvinsantosyz) • [LinkedIn](https://www.linkedin.com/in/kelvin-felipe-dos-santos/)
+
+---
+
+## 🏫 Créditos
+
+Universidade Nove de Julho – **UNINOVE**
+Orientador: **Prof. Luis Carlos dos Santos Junior**
+
+---
+
+## ⚖️ Licença
+
+Este projeto está licenciado sob a **MIT License** — veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+>>>>>>> e79d654dd563fd1f74cfaa485b754e2adb361f76
