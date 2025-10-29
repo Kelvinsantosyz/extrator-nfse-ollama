@@ -1,334 +1,208 @@
-<<<<<<< HEAD
-🤖 Extrator e Gestor Inteligente de Notas Fiscais com IA Local
-=======
-# 🤖 Extrator Inteligente de Notas Fiscais com IA Local e Streamlit
->>>>>>> e79d654dd563fd1f74cfaa485b754e2adb361f76
+# 🤖 Extrator Inteligente de NFS-e com OCR e LLM
 
-Este projeto foi desenvolvido para a disciplina de PROJETO EM COMPUTAÇÃO APLICADA da UNINOVE (Universidade Nove de Julho), sob orientação do Prof. Luis Carlos dos Santos Junior.
-
-Visão Geral
-
-O Extrator Inteligente de Notas Fiscais é uma aplicação web completa, desenvolvida em Python com Streamlit, que automatiza o processo de extração de dados de documentos fiscais (NFS-e). A solução utiliza um modelo de linguagem e visão (multimodal) rodando 100% localmente com Ollama para analisar imagens e PDFs, extrair informações estruturadas e persisti-las numa base de dados MySQL para análise e gestão financeira.
-
-<<<<<<< HEAD
-A aplicação conta com um sistema de autenticação robusto, gestão de utilizadores com diferentes níveis de permissão e um dashboard financeiro interativo para a visualização de métricas e tendências.
-
-Arquitetura do Projeto
-=======
-Este projeto é uma aplicação web completa, construída com **Streamlit**, que utiliza um **modelo de linguagem e visão (multimodal)** rodando **localmente com Ollama** para extrair, validar e analisar informações de **Notas Fiscais de Serviço Eletrônicas (NFS-e)**.
-
-A ferramenta transforma o processo manual de entrada de dados em um fluxo de trabalho **inteligente, automatizado e interativo**.
-
-💡 A aplicação é **100% local**, garantindo que **nenhum dado sensível** seja enviado para APIs externas, oferecendo **total privacidade e segurança**.
+Este projeto utiliza tecnologias de Reconhecimento Óptico de Caracteres (OCR) e Modelos de Linguagem Grandes (LLMs) locais (via Ollama) ou na nuvem (Azure) para extrair dados estruturados de Notas Fiscais de Serviço eletrônicas (NFS-e) brasileiras, armazenando-os numa base de dados MySQL. Uma interface web construída com Streamlit permite o upload, processamento, visualização, edição e gestão dos dados e utilizadores.
 
 ---
->>>>>>> e79d654dd563fd1f74cfaa485b754e2adb361f76
 
-O projeto é modularizado numa estrutura Frontend e Backend para uma melhor organização e manutenibilidade:
+**⚠️ Nota Importante sobre Precisão**
 
-<<<<<<< HEAD
-Frontend/: Construído com Streamlit, contém toda a lógica da interface do utilizador, dashboards e interação.
+Nenhum sistema de OCR ou LLM é 100% perfeito, especialmente com a variedade de layouts e a qualidade variável dos documentos digitalizados (incluindo imagens como PNG, JPEG, WEBP).
+* **OCR (Azure, Ollama, EasyOCR):** Pode haver erros na leitura de caracteres (ex: "5" confundido com "S", "1" com "I"), especialmente em imagens de baixa resolução ou com texto sobreposto.
+* **Extração LLM (Ollama/Phi3):** O modelo pode, ocasionalmente, interpretar mal o texto do OCR, confundir campos (Prestador vs. Tomador), omitir informações ou gerar um JSON inválido, principalmente se o texto do OCR contiver muitos erros.
 
-Backend/: O "motor" da aplicação, responsável por:
-
-Processamento de IA: Comunica com o Ollama para usar o modelo LLaVA na extração de dados.
-
-Gestão da Base de Dados: Interage com a base de dados MySQL para armazenar e consultar notas fiscais e utilizadores.
-=======
-A aplicação vai muito além de um simples script, oferecendo um ambiente completo para **gerenciamento e análise de NFS-e**:
-
-* **Interface Web Interativa**
-  Interface amigável construída com Streamlit, organizada em abas para diferentes tarefas.
-
-* **Motor de Extração Híbrido**
-
-  * Utiliza o modelo multimodal **LLaVA** para “ler” e extrair dados estruturados de imagens e PDFs.
-  * Sistema de **fallback com OCR (Tesseract)** garante a extração de texto mesmo quando a IA não reconhece corretamente.
-
-* **Múltiplos Métodos de Entrada**
-
-  * 📂 **Upload Manual**: Envie múltiplos arquivos (`.png`, `.jpg`, `.pdf`) de uma só vez.
-  * 🗂️ **Processamento em Lote**: Analisa automaticamente todos os documentos dentro de uma pasta no servidor.
-
-* **Validação Humana no Fluxo (Human-in-the-loop)**
-
-  * Exibe os dados extraídos em uma **tabela editável** (`st.data_editor`) antes do salvamento, permitindo correções manuais.
-
-* **Dashboard para Análise de Dados**
-
-  * Aba dedicada com **gráficos e métricas interativas**.
-  * **Gráfico de Pizza Interativo** (Plotly) mostrando distribuição por estado (UF).
-  * **Filtros Dinâmicos** por mês e ano para análise temporal.
-
-* **Consulta e Pesquisa**
-
-  * Pesquise em toda a base de dados com **filtros por qualquer termo**.
-  * Exibe **métricas e KPIs** como total de notas e valores acumulados.
-
-* **Gerenciamento de Dados Robusto**
-
-  * 🚫 **Prevenção de Duplicatas**: Identifica arquivos duplicados por **hash MD5**.
-  * ✅ **Integridade de Dados**: Garante que não haja entradas repetidas na planilha final.
-  * 💾 **Exportação Flexível**: Baixe os dados validados em **Excel (.xlsx)** ou **CSV**.
+**É crucial utilizar a funcionalidade de validação e edição (`st.data_editor`) fornecida na interface para verificar e corrigir os dados extraídos *antes* de os salvar na base de dados.** O objetivo da IA aqui é acelerar o processo, mas a revisão humana continua a ser fundamental para garantir a precisão final dos dados. O fine-tuning do LLM pode *aumentar significativamente* a precisão da extração para os *seus* tipos de documento, mas a validação ainda é recomendada.
 
 ---
+
+## ✨ Funcionalidades
+
+* **Upload Flexível:** Carregue ficheiros PDF, PNG, JPG, JPEG ou WEBP individualmente ou processe todos os ficheiros compatíveis numa pasta.
+* **Múltiplas Opções de OCR:** Escolha o motor de OCR que melhor se adapta às suas necessidades através de configuração (`.env`):
+    * **Azure Computer Vision:** Serviço de OCR na nuvem da Microsoft (requer subscrição Azure). Potencialmente alta precisão.
+    * **Ollama LMM (Local):** Utilize modelos de linguagem multimodais (como Llama 3.2 Vision, Llava, Granite) executados localmente via Ollama. Flexível, mas pode ser mais lento e consumir mais recursos.
+    * **EasyOCR (Local):** Biblioteca Python especializada em OCR, otimizada para velocidade, especialmente com GPU NVIDIA.
+* **Extração com LLM Local:** Utiliza um LLM configurado no Ollama (ex: `phi3:medium`) para analisar o texto extraído pelo OCR e estruturá-lo num formato JSON pré-definido.
+* **Validação e Edição:** Interface `st.data_editor` para visualizar e corrigir os dados extraídos antes de salvar.
+* **Armazenamento em Base de Dados:** Guarda os dados validados numa base de dados MySQL para consulta e análise.
+* **Consulta e Exportação:** Pesquise notas fiscais por diversos campos (CNPJ, Razão Social, etc.) e exporte os resultados para CSV ou Excel.
+* **Dashboard Financeiro:** Visualizações básicas (Plotly) sobre totais, evolução mensal, top prestadores e categorias.
+* **Gestão de Utilizadores:** Sistema de login seguro (`streamlit-authenticator`) com gestão de utilizadores (criar, excluir, forçar alteração de senha) para administradores.
+* **Preparado para Fine-Tuning:** Exporta os pares (Texto OCR Bruto, JSON Extraído Bruto) em formato `.jsonl`, pronto para ser corrigido e usado para treinar um modelo LLM extrator mais preciso.
 
 ## 🛠️ Tecnologias Utilizadas
----
 
-| Biblioteca                | Principal Uso                                                                 |
-| ------------------------- | ----------------------------------------------------------------------------- |
-| `streamlit`               | Criação da interface web e dashboards interativos                             |
-| `pandas`                  | Manipulação, filtragem e agregação de dados                                   |
-| `ollama`                  | Execução local do modelo de linguagem multimodal (LLaVA)                      |
-| `pytesseract`             | OCR para fallback em caso de falha do modelo                                  |
-| `PyMuPDF`                 | Extração de texto de arquivos PDF                                             |
-| `Pillow`                  | Manipulação de imagens para OCR                                               |
-| `plotly`                  | Geração de gráficos interativos                                               |
-| `openpyxl`, `xlsxwriter`  | Leitura e escrita de planilhas Excel (.xlsx)                                  |
-| `mysql-connector-python`  | Conexão e comunicação com o banco de dados MySQL                              |
-| `python-dotenv`           | Leitura de variáveis de ambiente a partir do arquivo `.env`                   |
-| `streamlit_authenticator` | Sistema de autenticação seguro com login, permissões e gestão de utilizadores |
+* **Linguagem:** Python 3.10+
+* **Interface Web:** Streamlit
+* **LLM (Local):** Ollama (com modelos como `phi3`, `llava`, `granite`, etc.)
+* **OCR (Opções):**
+    * Azure Computer Vision SDK (`azure-cognitiveservices-vision-computervision`, `msrest`)
+    * Ollama (com modelos LMM)
+    * EasyOCR (+ `torch`, `torchvision`, `torchaudio`)
+* **Manipulação de PDF:** PyMuPDF (`fitz`)
+* **Base de Dados:** MySQL
+* **Interação com BD:** `mysql-connector-python`, `SQLAlchemy`, `PyMySQL`
+* **Autenticação:** `streamlit-authenticator`, `bcrypt`
+* **Manipulação de Dados:** Pandas
+* **Visualização:** Plotly Express (`plotly`)
+* **Configuração:** `python-dotenv`
+* **Imagens (Leitura base):** Pillow (geralmente instalada como dependência)
 
----
+## 📚 Bibliotecas Necessárias
 
-Quer que eu integre essa tabela no seu **README final** na seção de “🧩 Dependências”?
+Instale as bibliotecas Python listadas abaixo. É **altamente recomendado** usar um ambiente virtual (`venv`).
 
->>>>>>> e79d654dd563fd1f74cfaa485b754e2adb361f76
-
-Gestão de Autenticação: Lida com a lógica de login e permissões.
-
-<<<<<<< HEAD
-Funcionalidades Principais
-
-Extração de Dados com IA
-
-Processamento Multimodal: Lê ficheiros de imagem (.png, .jpg) e PDFs diretamente.
-
-IA 100% Local: Utiliza o modelo LLaVA através do Ollama, garantindo total privacidade e zero custos de API.
-
-Sugestão de Categoria: A IA sugere uma categoria de despesa com base na descrição dos serviços.
-
-Base de Dados e Persistência
-
-Backend MySQL: Todos os dados são armazenados numa base de dados MySQL, garantindo escalabilidade e rapidez nas consultas.
-
-Prevenção de Duplicatas: Utiliza um hash MD5 para cada ficheiro, impedindo que o mesmo documento seja processado múltiplas vezes.
-
-Sistema de Autenticação e Gestão de Utilizadores
-
-Tela de Login Segura: O acesso à aplicação é protegido por um sistema de login.
-=======
-Siga os passos abaixo para configurar e executar a aplicação corretamente.
-
-### 1️⃣ Pré-requisitos
-
-* **Python 3.8+** → [python.org](https://www.python.org/downloads/)
-* **Ollama** → [ollama.com](https://ollama.com/)
-* **Google Tesseract OCR** → [Instruções de instalação](https://github.com/tesseract-ocr/tessdoc/blob/main/Installation.md)
-
-Após instalar o Ollama, baixe o modelo multimodal:
-
+**Bibliotecas Base:**
 ```bash
-# Você pode escolher um modelo menor (ex: llava:7b) se preferir desempenho
-ollama pull llava:13b
-```
-
-> ⚠️ Lembre-se de adicionar o Tesseract à variável de ambiente **PATH** no Windows.
-
----
-
-### 2️⃣ Configuração do Projeto
-
-1. **Clone o repositório:**
-
-   ```bash
-   git clone https://github.com/Kelvinsantosyz/extrator-nfse-ollama.git
-   cd extrator-nfse-ollama
-   ```
-
-2. **Crie e ative um ambiente virtual:**
-
-   ```bash
-   python -m venv venv
-   # Ativar no Windows (PowerShell)
-   .\venv\Scripts\Activate.ps1
-   # ou no Linux/Mac
-   source venv/bin/activate
-   ```
-
-3. **Instale as dependências:**
-
-   ```bash
-   python -m pip install -r requirements.txt
-   ```
-
-4. **Crie as pastas necessárias (se não existirem):**
-
-   ```bash
-   mkdir Documentos Planilha
-   ```
-
-   * `Documentos/` → pasta usada para o processamento em lote
-   * `Planilha/` → onde o Excel será salvo
-
----
-
-### 3️⃣ Execução
-
-Inicie o aplicativo a partir do terminal (com o ambiente virtual ativo):
-
-```bash
-python -m streamlit run app.py
-```
-
-O Streamlit abrirá automaticamente uma aba no navegador com a aplicação em execução.
-
----
->>>>>>> e79d654dd563fd1f74cfaa485b754e2adb361f76
-
-Palavras-passe Criptografadas: As palavras-passe são armazenadas de forma segura na base de dados usando hash bcrypt.
-
-<<<<<<< HEAD
-Níveis de Permissão:
-
-Utilizador Padrão: Pode processar documentos e visualizar os dados.
-
-Administrador: Tem acesso a um painel exclusivo para gerir o sistema.
-
-Painel de Administrador:
-
-Visualização de todos os utilizadores registados.
-
-Criação de novos utilizadores (padrão ou administradores).
-
-Opção para forçar a alteração de palavra-passe de um utilizador.
-
-Eliminação de contas de utilizador.
-
-Exportação da lista de utilizadores para CSV.
-
-Gestão de Perfil:
-
-Os utilizadores são forçados a alterar a palavra-passe no primeiro login.
-
-Qualquer utilizador pode alterar a sua própria palavra-passe a qualquer momento através do seu perfil.
-
-Interface e Análise Financeira
-
-Upload Flexível: Permite o envio de múltiplos ficheiros ou o processamento de uma pasta inteira no servidor.
-
-Validação de Dados: Exibe os dados extraídos numa tabela editável antes de os salvar permanentemente, permitindo correções manuais.
-
-Consulta e Filtro Avançados: Uma aba dedicada para pesquisar na base de dados por CNPJ, Razão Social ou Número da Nota, com resumo financeiro dos resultados filtrados.
-
-Dashboard Financeiro Interativo:
-
-Métricas gerais (Valor Total, Total de ISS, Carga Tributária Média).
-
-Gráfico de evolução mensal de despesas e impostos.
-
-Gráfico com o Top 5 de fornecedores (prestadores).
-
-Gráfico de pizza com a distribuição de despesas por categoria.
-
-Tecnologias Utilizadas
-
-Linguagem: Python 3.8+
-
-Interface: Streamlit
-
-Processamento de IA: Ollama com o modelo LLaVA (13b)
-
-Base de Dados: MySQL
-
-Conexão com a BD: SQLAlchemy e mysql-connector-python
-
-Manipulação de Dados: Pandas
-
-Autenticação: Streamlit-Authenticator e Bcrypt
-
-Como Executar
-
-Siga os passos abaixo para configurar e executar o projeto.
-
-1. Pré-requisitos
-
-Python 3.8+: python.org
-
-Ollama: ollama.com
-
-Modelo LLaVA: Após instalar o Ollama, execute no terminal: ollama pull llava:13b
-
-Servidor MySQL: Tenha um servidor MySQL em execução (local ou remoto).
-
-2. Configuração do Projeto
-
-Clone o repositório:
-
-git clone [https://github.com/Kelvinsantosyz/extrator-nfse-ollama.git](https://github.com/Kelvinsantosyz/extrator-nfse-ollama.git)
-cd extrator-nfse-ollama
-
-
-Crie e ative um ambiente virtual:
-
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-
-
-Instale as dependências:
-
-pip install -r requirements.txt
-
-
-Configure as credenciais:
-
-Crie um ficheiro chamado .env na raiz do projeto.
-
-Preencha-o com as suas credenciais da base de dados:
-
-DB_HOST=localhost
-DB_USER=seu_usuario
-DB_PASSWORD=sua_senha
-DB_NAME=nfse_db
-
-
-Crie o primeiro utilizador administrador:
-
-Execute o script de configuração a partir da raiz do projeto:
-
-python create_admin.py
-
-
-Siga as instruções no terminal para criar a sua conta de administrador.
-
-3. Execução
-
-Certifique-se de que o Ollama e o seu servidor MySQL estão em execução.
-
-A partir da raiz do projeto, execute o comando:
-
-streamlit run Frontend/app.py
-
-
-A aplicação será aberta automaticamente no seu navegador. Faça login com o utilizador administrador que acabou de criar.
-=======
-**Kelvin Santos**
-📧 [kelvinsantosyz@gmail.com](mailto:kelvinsantosyz@gmail.com)
-💻 [GitHub](https://github.com/Kelvinsantosyz) • [LinkedIn](https://www.linkedin.com/in/kelvin-felipe-dos-santos/)
-
----
-
-## 🏫 Créditos
-
-Universidade Nove de Julho – **UNINOVE**
-Orientador: **Prof. Luis Carlos dos Santos Junior**
-
----
-
-## ⚖️ Licença
-
-Este projeto está licenciado sob a **MIT License** — veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
----
->>>>>>> e79d654dd563fd1f74cfaa485b754e2adb361f76
+pip install streamlit pandas plotly mysql-connector-python streamlit-authenticator bcrypt python-dotenv sqlalchemy pymysql ollama PyMuPDF Pillow openpyxl xlsxwriter
+````
+
+*(Nota: `openpyxl` e `xlsxwriter` são necessários para exportar para Excel)*
+
+**Dependências Específicas de OCR (instale APENAS as que for usar):**
+
+  * **Para Azure Computer Vision (`OCR_METHOD=AZURE`):**
+
+    ```bash
+    pip install azure-cognitiveservices-vision-computervision msrest
+    ```
+
+  * **Para EasyOCR (`OCR_METHOD=EASYOCR`):**
+
+      * **Com Suporte GPU NVIDIA (Recomendado):**
+        ```bash
+        # Instale PyTorch com suporte CUDA (ajuste 'cu121' para sua versão CUDA se necessário)
+        pip install torch torchvision torchaudio --index-url [https://download.pytorch.org/whl/cu121](https://download.pytorch.org/whl/cu121)
+        pip install easyocr
+        ```
+      * **Apenas CPU:**
+        ```bash
+        pip install torch torchvision torchaudio # Pode usar a versão padrão da CPU
+        pip install easyocr
+        ```
+        *(Nota: EasyOCR sem GPU será consideravelmente mais lento)*
+
+  * **Para Ollama LMM (`OCR_METHOD=OLLAMA`):** Nenhuma biblioteca Python extra *além do `ollama`* (já na lista base) é necessária, mas você precisa ter o [Ollama](https://ollama.com/) instalado e a correr no seu sistema, com os modelos LMM desejados (ex: `ollama pull llava-llama3`) já baixados.
+
+## ⚙️ Configuração
+
+1.  **Base de Dados MySQL:** Certifique-se de ter um servidor MySQL a correr e crie uma base de dados para este projeto.
+
+2.  **Ficheiro `.env`:** Crie um ficheiro chamado `.env` na pasta raiz do projeto (`H:\projeto2`) e adicione as seguintes variáveis, substituindo pelos seus valores:
+
+    ```dotenv
+    # --- Credenciais do Banco de Dados MySQL ---
+    DB_HOST=localhost
+    DB_USER=seu_usuario_mysql
+    DB_PASSWORD=sua_senha_mysql
+    DB_NAME=seu_banco_de_dados_mysql
+
+    # --- Escolha do Método OCR ---
+    # Opções válidas: AZURE, OLLAMA, EASYOCR
+    # (Se omitido ou inválido, o padrão será AZURE se as credenciais estiverem disponíveis, senão tentará Ollama/EasyOCR se disponíveis)
+    OCR_METHOD=AZURE
+
+    # --- Configurações para OCR_METHOD=OLLAMA ---
+    # Escolha o modelo LMM que você baixou no Ollama (ex: llava-llama3, granite3.2-vision, llava:13b)
+    MODELO_LMM_OCR=llava-llama3
+
+    # --- Credenciais Azure (Necessário APENAS se OCR_METHOD=AZURE) ---
+    # Descomente e preencha se for usar Azure e se NÃO estiverem hardcoded no processador.py
+    # AZURE_CV_KEY="sua_chave_azure_aqui"
+    # AZURE_CV_ENDPOINT="seu_endpoint_azure_aqui"
+
+    # --- (Opcional) Chave Secreta para Cookies de Autenticação ---
+    # Gere uma chave aleatória longa (ex: openssl rand -hex 32)
+    # AUTH_SECRET_KEY="sua_chave_secreta_aqui"
+    ```
+
+      * **Importante:** Verifique o ficheiro `Backend/processador.py` para confirmar se as credenciais Azure estão hardcoded ou se dependem do `.env`. Se dependerem do `.env`, descomente e preencha `AZURE_CV_KEY` e `AZURE_CV_ENDPOINT`.
+      * Se `OCR_METHOD` for `OLLAMA`, certifique-se que o `MODELO_LMM_OCR` corresponde a um modelo que você baixou (`ollama pull nome_do_modelo`).
+      * Se `OCR_METHOD` for `EASYOCR`, certifique-se que instalou as bibliotecas corretamente.
+
+3.  **Ollama (Se usar OCR\_METHOD=OLLAMA ou para Extração LLM):**
+
+      * Instale o [Ollama](https://ollama.com/) no seu sistema.
+      * Baixe os modelos necessários:
+        ```bash
+        # Modelo para extração JSON (ex: phi3)
+        ollama pull phi3:medium
+
+        # Modelo LMM para OCR (se OCR_METHOD=OLLAMA, ex: llava-llama3)
+        ollama pull llava-llama3 # Ou o modelo definido em MODELO_LMM_OCR
+        ```
+      * Certifique-se que o serviço Ollama está a correr antes de iniciar a aplicação Streamlit.
+
+## 🚀 Instalação e Execução
+
+1.  **Clone o Repositório:**
+    ```bash
+    git clone <url_do_seu_repositorio>
+    cd <nome_da_pasta_do_projeto> # Ex: cd projeto2
+    ```
+2.  **Crie e Ative um Ambiente Virtual (Recomendado):**
+    ```bash
+    python -m venv venv
+    # Windows
+    .\venv\Scripts\activate
+    # Linux/macOS
+    source venv/bin/activate
+    ```
+3.  **Instale as Dependências:**
+    ```bash
+    pip install -r requirements.txt # (Se você criar um ficheiro requirements.txt com as bibliotecas listadas acima)
+    # Ou instale manualmente as bibliotecas necessárias listadas na seção "Bibliotecas"
+    ```
+4.  **Configure o `.env`:** Crie e preencha o ficheiro `.env` na raiz do projeto, como descrito na seção "Configuração".
+5.  **Execute a Aplicação Streamlit:**
+      * Certifique-se que o serviço Ollama está a correr (se aplicável).
+      * Navegue até à pasta `Frontend`:
+        ```bash
+        cd Frontend
+        ```
+      * Execute o Streamlit:
+        ```bash
+        streamlit run app.py
+        ```
+6.  **Primeiro Login:** A aplicação criará as tabelas na base de dados automaticamente. O primeiro utilizador pode precisar de ser criado manualmente ou através de um script inicial (não incluído). Utilize as credenciais definidas para fazer login. Se for administrador, poderá criar outros utilizadores na aba "Gerir Utilizadores".
+
+## 📖 Uso
+
+1.  **Login:** Aceda à aplicação e faça login com as suas credenciais.
+2.  **Processar Documentos:**
+      * Na aba "➕ Processar Documentos", escolha "Upload Manual" para carregar ficheiros individuais ou "Processar Pasta" para indicar um diretório no servidor.
+      * Clique no botão "Iniciar Processamento". A aplicação usará o método OCR configurado no `.env` para ler o texto e o LLM local (Ollama) para extrair os dados.
+      * Os dados extraídos (brutos) serão exibidos num editor de tabela (`st.data_editor`). Se a extração falhar, a "Resposta Bruta" do LLM será exibida.
+      * **Valide e Corrija:** Verifique os dados na tabela e faça as correções necessárias clicando duas vezes nas células.
+      * **Salvar:** Clique em "✅ Salvar Dados Limpos na Base de Dados". Os dados serão limpos (formatação de números, datas) e guardados no MySQL.
+      * **Cancelar:** Clique em "❌ Cancelar Edição" para descartar os dados extraídos sem salvar.
+      * **Baixar Dados para Treino:** Clique em "🧬 Baixar Dados para Treino (.jsonl)" para exportar o texto OCR bruto e o JSON bruto extraído pelo LLM (antes da edição). Este ficheiro é útil para fine-tuning.
+3.  **Consultar Dados:**
+      * Na aba "🔍 Consultar Dados", utilize a barra de pesquisa para filtrar as notas fiscais por diferentes campos.
+      * Visualize os resultados e baixe a consulta em formato CSV.
+4.  **Dashboard Financeiro:**
+      * A aba "📊 Dashboard Financeiro" apresenta gráficos sobre a evolução mensal, top prestadores, categorias e maiores notas.
+5.  **Gerir Utilizadores (Admin):**
+      * Se for administrador, a aba "⚙️ Gerir Utilizadores" permite visualizar, criar, excluir e forçar a alteração de senha de outros utilizadores.
+
+## 💡 Opções de OCR: Prós e Contras
+
+  * **`OCR_METHOD=AZURE`**
+      * **Prós:** Potencialmente a maior precisão, mantido pela Microsoft, bom com layouts variados.
+      * **Contras:** Requer subscrição Azure (custo associado), depende de conexão à internet, pode ser mais lento que EasyOCR devido à latência da rede e processamento na nuvem.
+  * **`OCR_METHOD=OLLAMA`**
+      * **Prós:** Flexibilidade (pode testar vários modelos LMM locais - Llava, Granite, etc.), processamento totalmente local (privacidade), pode ser bom com imagens complexas onde o contexto ajuda.
+      * **Contras:** **Geralmente o mais lento**, consome muitos recursos locais (RAM, VRAM), a precisão depende muito do modelo LMM escolhido (`MODELO_LMM_OCR` no `.env`).
+  * **`OCR_METHOD=EASYOCR`**
+      * **Prós:** **Geralmente o mais rápido**, especialmente com GPU NVIDIA. Boa precisão para documentos padrão. Processamento local.
+      * **Contras:** Pode ter menor precisão que Azure/LMMs em layouts muito complexos, texto degradado ou manuscrito (menos relevante para NFS-e). A instalação do PyTorch com CUDA pode ser complexa.
+
+## 🚀 Melhorias Futuras (Fine-Tuning)
+
+A precisão da *extração* (transformar texto OCR em JSON) pode ser significativamente melhorada através do **fine-tuning** de um modelo LLM (como `phi3:mini` ou `phi3:medium`).
+
+1.  Processe um lote de documentos usando a aplicação.
+2.  Clique em "🧬 Baixar Dados para Treino (.jsonl)".
+3.  **Manualmente, corrija** o campo `"completion"` (que contém o JSON bruto extraído) em cada linha do ficheiro `.jsonl` para que fique 100% correto.
+4.  Use este ficheiro `.jsonl` corrigido para fazer o fine-tuning de um modelo LLM (usando ferramentas como `unsloth`, `axolotl`, `LLaMA Factory`, etc.).
+5.  Importe o seu modelo treinado para o Ollama (ex: `ollama create meu_extrator_nfse -f SeuModelfile`).
+6.  Atualize a variável `modelo_usado` no ficheiro `Backend/processador.py` para usar o nome do seu modelo treinado (ex: `modelo_usado = 'meu_extrator_nfse:latest'`).
