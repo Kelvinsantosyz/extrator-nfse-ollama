@@ -17,9 +17,8 @@ Nenhum sistema de OCR ou LLM é 100% perfeito, especialmente com a variedade de 
 
 ## 🎬 Demonstração em vídeo
 
-Quer mostrar o software a quem for avaliar o projeto? Adicionei um link para o vídeo de demonstração do software funcionando:
-
 [▶️ Vídeo: Demonstração do software funcionando](https://www.youtube.com/watch?v=nK4gICMGSW0)
+[▶️ Vídeo:Apresentação Extrator Inteligente de NFS-ecom OCR e LLM](www.youtube.com/watch?v=prbXoetvZEo&feature=youtu.be)
 
 
 ## ✨ Funcionalidades
